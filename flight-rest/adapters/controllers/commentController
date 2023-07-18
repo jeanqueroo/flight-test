@@ -1,0 +1,40 @@
+const CommentRepositoryMongoDB = require('../../database/repositories/commentRepositoryMongoDB');
+const CommentDbRepository = require('../../application/repositories/commentDbRepository');
+const AddComment = require('../../application/use_case/comment/add');
+const FindByFlightId = require('../../application/use_case/comment/findByFlightId');
+const CountAll = require('../../application/use_case/comment/countAll');
+
+
+const dbRepository = new CommentDbRepository(new CommentRepositoryMongoDB());
+
+
+const fetchFindByFlightId = async (req, res, next) => {
+    try {
+        const comments = await new FindByFlightId(dbRepository).findByFlightId(req.params.flightId);
+        res.json(comments);
+
+    } catch (error) {
+        res.json({
+            error: error
+        });
+    }
+  };
+
+const addNewComment = async (req, res, next) => {
+
+    
+    const { comment, userId, flightId, tags, createdAt} = req.body;
+
+     await new CountAll(dbRepository).countAll().then((count) =>{
+       
+        res.json({
+            comment:  new AddComment(count + 1 ,comment, userId, flightId, tags, createdAt, dbRepository).addComment()
+         })
+     });
+
+    
+    
+
+  };
+
+  module.exports = { fetchFindAll, fetchFindByFlightId, addNewComment }
